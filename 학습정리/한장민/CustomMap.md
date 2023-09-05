@@ -6,7 +6,12 @@
 
 8층 휴게실 실측 결과
 
+<img src="./img/8층_휴게실_실측.jpg" width="400">
+
 1차 커스텀 맵 생성 결과
+
+<img src="./img/CustomMap.PNG" width="500">
 
 2차 커스텀 맵 생성 결과
 
+<img src="./img/CustomMap_v2.PNG" width="500">
