@@ -14,4 +14,4 @@
 
 2차 커스텀 맵 생성 결과
 
-<img src="./img/CustomMap_v2.PNG" width="500">
+<img src="./img/CustomMap_v2.png" width="500">
