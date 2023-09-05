@@ -10,8 +10,8 @@
 
 1차 커스텀 맵 생성 결과
 
-<img src="./한장민/img/CustomMap.PNG" width="500">
+<img src="./img/CustomMap.PNG" width="500">
 
 2차 커스텀 맵 생성 결과
 
-<img src="./한장민/img/CustomMap_v2.PNG" width="500">
+<img src="./img/CustomMap_v2.PNG" width="500">
