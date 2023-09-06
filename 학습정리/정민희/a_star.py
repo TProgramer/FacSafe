@@ -50,11 +50,11 @@ class a_star(Node):
         self.map_offset_y=-4-8.75
     
         self.GRIDSIZE=350          # 그리드의 크기를 설정
- 
+
         self.dx = [-1,0,0,1,-1,-1,1,1]     # 이동 방향 리스트 (상, 하, 좌, 우, 대각선 방향)
         self.dy = [0,1,-1,0,-1,1,-1,1]
         self.dCost = [1,1,1,1,1.414,1.414,1.414,1.414]   # 이동 비용 리스트
-       
+
 
     def grid_update(self):
         self.is_grid_update=True
@@ -83,7 +83,7 @@ class a_star(Node):
 
         x = 0
         y = 0
-       
+
         # 로직 5. map의 grid cell을 위치(x,y)로 변환
         # (테스트) grid cell이 (175,175)라면 맵의 중앙에 위치하게 된다. 따라서 pose로 변환하게 되면 맵의 중앙인 (-8,-4)가 된다.
         # grid cell이 (350,350)라면 맵의 제일 끝 좌측 상단에 위치하게 된다. 따라서 pose로 변환하게 되면 맵의 좌측 상단인 (0.75,6.25)가 된다.
@@ -141,7 +141,7 @@ class a_star(Node):
                 # 다익스트라 알고리즘을 완성하고 주석을 해제 시켜주세요. 
                 # 시작지, 목적지가 탐색가능한 영역이고(장애물이 없는 영역이고), 시작지와 목적지가 같지 않으면 경로탐색을 합니다.
                 if self.grid[start_grid_cell[0]][start_grid_cell[1]] ==0  and self.grid[self.goal[0]][self.goal[1]] ==0  and start_grid_cell != self.goal :
-                     self.dijkstra(start_grid_cell)  # 다익스트라 경로 계획 알고리즘을 호출
+                    self.dijkstra(start_grid_cell)  # 다익스트라 경로 계획 알고리즘을 호출
 
 			
 
@@ -163,31 +163,36 @@ class a_star(Node):
         Q.append(start)
         self.cost[start[0]][start[1]] = 1
         found = False
-        '''
-        로직 7. grid 기반 최단경로 탐색
         
-        while ??:
-            if ??:
-                ??
+        while len(Q) > 0:  # Q에 노드가 남아있는 동안 반복
+            if found:
+                break    
 
-            current =??
+            current = Q.popleft()  # 큐에서 노드하나를 꺼내서
 
-            for i in range(8):
-                next = ??
+            for i in range(8):    # 8방향을 보고
+                dx = self.dx[i]
+                dy = self.dy[i]
+                next_x = current[0] + dx
+                next_y = current[1] + dy
+        
+                next = (next_x, next_y)
                 if next[0] >= 0 and next[1] >= 0 and next[0] < self.GRIDSIZE and next[1] < self.GRIDSIZE:
                         if self.grid[next[0]][next[1]] < 50:
-                            if ??:
-                                Q.??
-                                self.path[next[0]][next[1]] = ???
-                                self.cost[next[0]][next[1]] = ???
+                            new_cost = self.cost[current[0]][current[1]] + self.dCost[i] # 새로운 노드의 비용을 계산하고 
+                            if new_cost < self.cost[next[0]][next[1]]: # 이동하는 것이 더 저렴하다면
+                                Q.append(next)    # Q에 next를 추가하고
+                                self.path[next[0]][next[1]] = current   # self.path 배열에 이전 노드인 current를 저장
+                                self.cost[next[0]][next[1]] = new_cost  # 비용 배열 self.cost 업데이트
 
-        node = ??
-        while ?? 
-            nextNode = ??
-            self.final_path.??
-            node = ??
-        '''       
-        
+        node = self.goal    # 목표 노드부터 시작
+        while node != start:  # 시작 노드에 도달할 때까지
+            nextNode = self.path[node[0]][node[1]]  # 현재 노드에서 이전 노드를 찾아
+            self.final_path.append(node)  # final_path에 현재 노드를 추가
+            node = nextNode  # 다음 노드를 현재 노드로 업데이트
+
+
+
 
         
 def main(args=None):

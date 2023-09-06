@@ -112,11 +112,11 @@ def transformMTX_lidar2cam(params_lidar, params_cam):
 
     # 로직 1. params에서 라이다와 카메라 센서들의 자세, 위치 정보를 뽑기.
 
-    lidar_yaw, lidar_pitch, lidar_roll = params_lidar['yaw'], params_lidar['pitch'], params_lidar['roll']
-    cam_yaw, cam_pitch, cam_roll = params_cam['yaw'], params_cam['pitch'], params_cam['roll']
+    lidar_yaw, lidar_pitch, lidar_roll = params_lidar['YAW'], params_lidar['PITCH'], params_lidar['ROLL']
+    cam_yaw, cam_pitch, cam_roll = params_cam['YAW'], params_cam['PITCH'], params_cam['ROLL']
     
-    lidar_pos = [params_lidar['x'], params_lidar['y'], params_lidar['z']]
-    cam_pos = [params_cam['x'], params_cam['y'], params_cam['z']]
+    lidar_pos = [params_lidar['X'], params_lidar['Y'], params_lidar['Z']]
+    cam_pos = [params_cam['X'], params_cam['Y'], params_cam['Z']]
 
 
     # 로직 2. 라이다에서 카메라 까지 변환하는 translation 행렬을 정의

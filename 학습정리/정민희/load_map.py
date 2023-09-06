@@ -28,7 +28,7 @@ class loadMap(Node):
         time_period=1  
         self.timer = self.create_timer(time_period, self.timer_callback)
 				# 1초마다 콜백함수 호출
-       
+
         # 로직 1. 맵 파라미터 설정
         # 제공한 맵 데이터의 파라미터입니다. 
 				# size_x,y는 x,y 방향으로 grid의 개수이고, resolution은 grid 하나당 0.05m라는 것을 의미합니다.
@@ -48,7 +48,6 @@ class loadMap(Node):
         self.map_msg.header.frame_id="map"   
 				# self.map_msg의 header 속성에 있는 frame_id 값을 "map"으로 설정합니다.
 				# 지도 메시지가 어떤 좌표 프레임에서 정의되었는지를 나타냄
-			  
 
         m = MapMetaData()
         m.resolution = self.map_resolution   # map_resolution : 해상도 정보
@@ -64,17 +63,19 @@ class loadMap(Node):
         
         # 로직 2. 맵 데이터 읽고, 2차원 행렬로 변환
 
-        full_path="C:\Users\SSAFY\Desktop\team_project\mobility-smarthome-skeleton\ros2_smart_home\sub2\map\map.txt"        # 맵 파일 경로 
+        full_path="C:/Users/SSAFY/Desktop/team_project/mobility-smarthome-skeleton/ros2_smart_home/sub2/map/map.txt"        # 맵 파일 경로 
 				
-				with open(full_path, 'r') as self.f:    # 맵 파일 열기
-				    line_data = self.f.readlines()      # 파일에서 각 줄을 읽어서 line_data 리스트에 저장
-        
-        for num,data in enumerate(line_data) :  # line_data를 순회하면서 각 데이터를 self.map_data에 저장
-            self.map_data[num] = int(data.strip())   # 정수형으로 변환하여 self.map_data[num]에 저장
-   
+        with open(full_path, 'r') as self.f:    # 맵 파일 열기
+            line_data = self.f.readlines()      # 파일에서 각 줄을 읽어서 line_data 리스트에 저장
+
+        for num, line in enumerate(line_data):
+            data_list = line.strip().split()  # 공백을 기준으로 문자열을 분리하여 리스트로 만듭니다.
+            for x, data in enumerate(data_list):
+                self.map_data[num * len(data_list) + x] = int(data)  # 각 숫자를 정수로 변환하여 저장합니다.
+
         map_to_grid = np.array(self.map_data)    # 2차원 배열로 self.map_data 작성
         grid = np.reshape(map_to_grid, (350, 350))
-        
+
 
 
         for y in range(350):        # 100인 지점 주변의 값을 어떻게 처리할지에 대한 코드
@@ -85,21 +86,19 @@ class loadMap(Node):
                     # 로직 3. 점유영역 근처 필터처리    # 일단 주변좌표를 0으로 바꿈
 
                     if x > 0:
-				                grid[x-1][y] = 0  # 왼쪽의 값을 변경
-				            if x < 349:
-				                grid[x+1][y] = 0  # 오른쪽의 값을 변경
-				            if y > 0:
-				                grid[x][y-1] = 0  # 위쪽의 값을 변경
-				            if y < 349:
-				                grid[x][y+1] = 0  # 아래쪽의 값을 변경
-				
-                    
+                        grid[x-1][y] = 0  # 왼쪽의 값을 변경
+                    if x < 349:
+                        grid[x+1][y] = 0  # 오른쪽의 값을 변경
+                    if y > 0:
+                        grid[x][y-1] = 0  # 위쪽의 값을 변경
+                    if y < 349:
+                        grid[x][y+1] = 0  # 아래쪽의 값을 변경
+
 
         
         np_map_data=grid.reshape(1,350*350)    # 2차원 배열을 1차원 배열로 변환
         list_map_data=np_map_data.tolist()     # NumPy 배열 np_map_data를 Python 리스트로 변환
-   
-   
+
         ## 로직2를 완성하고 주석을 해제 시켜주세요.
         self.f.close()      # self.f 파일을 닫고
         print('read_complete')    # 파일 읽기 작업이 완료되었음을 표시
@@ -110,7 +109,7 @@ class loadMap(Node):
         self.map_msg.header.stamp =rclpy.clock.Clock().now().to_msg()  # 현재 시간을 가져와서 self.map_msg 메시지의 header.stamp에 설정
         self.map_pub.publish(self.map_msg)   # self.map_pub : 메시지를 발행하는 ROS Publisher 객체
 
-       
+
 def main(args=None):
     rclpy.init(args=args)    # ROS 2 노드를 초기화
 
@@ -119,7 +118,7 @@ def main(args=None):
     load_map.destroy_node()    # destroy_node : 노드가 종료되면 노드를 정리하고 노드 자원을 해제
     rclpy.shutdown()         # ROS 2 라이브러리를 종료
 
-     # 스핀 함수를 호출하면 이후의 코드는 노드가 계속 실행될 때까지 블록된다.
+    # 스핀 함수를 호출하면 이후의 코드는 노드가 계속 실행될 때까지 블록된다.
 
 
 if __name__ == '__main__':
