@@ -69,8 +69,8 @@ class odom(Node):
         self.is_imu = False
         self.is_calc_theta = False
         # x,y,theta는 추정한 로봇의 위치를 저장할 변수 입니다.
-        self.x = 0.0
-        self.y = 0.0
+        self.x = -8-8.75
+        self.y = -4-8.75
 
         self.theta = 0.0
         # imu_offset은 초기 로봇의 orientation을 저장할 변수 입니다.
@@ -159,11 +159,11 @@ class odom(Node):
         
         # TurtlebotStatus 메시지로부터 선속도와 각속도 추출
         # 원래의 코드
-        print(
-            "linear_vel : {}  angular_vel : {}".format(
-                msg.twist.linear.x, -msg.twist.angular.z
-            )
-        )
+        # print(
+        #     "linear_vel : {}  angular_vel : {}".format(
+        #         msg.twist.linear.x, -msg.twist.angular.z
+        #     )
+        # )
         if self.is_imu == True:
             
             # 처음 메시지를 받았을 때, 초기화 및 시간 설정
@@ -265,8 +265,8 @@ class odom(Node):
                 self.base_link_transform.transform.rotation.z = q.z
                 self.base_link_transform.transform.rotation.w = q.w
 
-                self.odom_msg.pose.pose.position.x = self.x
-                self.odom_msg.pose.pose.position.y = self.y
+                self.odom_msg.pose.pose.position.x = -16.75
+                self.odom_msg.pose.pose.position.y = -12.75
                 self.odom_msg.pose.pose.orientation.x = q.x
                 self.odom_msg.pose.pose.orientation.y = q.y
                 self.odom_msg.pose.pose.orientation.z = q.z
