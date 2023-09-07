@@ -33,6 +33,10 @@ class a_star(Node):
         self.goal_sub = self.create_subscription(PoseStamped,'goal_pose',self.goal_callback,1)   # 목표 위치 수신
         self.a_star_pub= self.create_publisher(Path, 'global_path', 1)    # 경로 메시지 발행하기
         
+        # self.global_path_msg=Path()   # 경로를 저장하기 위한 Path 메시지를 생성
+        # self.final_path=[]   # 최종 경로를 저장할 빈 리스트 생성
+
+
         self.map_msg=OccupancyGrid()
         self.odom_msg=Odometry()
         self.is_map=False
@@ -50,11 +54,11 @@ class a_star(Node):
         self.map_offset_y=-4-8.75
     
         self.GRIDSIZE=350          # 그리드의 크기를 설정
- 
+
         self.dx = [-1,0,0,1,-1,-1,1,1]     # 이동 방향 리스트 (상, 하, 좌, 우, 대각선 방향)
         self.dy = [0,1,-1,0,-1,1,-1,1]
         self.dCost = [1,1,1,1,1.414,1.414,1.414,1.414]   # 이동 비용 리스트
-       
+
 
     def grid_update(self):
         self.is_grid_update=True
@@ -68,13 +72,14 @@ class a_star(Node):
     def pose_to_grid_cell(self,x,y):
         map_point_x = 0
         map_point_y = 0
+        print("pose_to_grid_cell 왔음") 
         
         # 로직 4. 위치(x,y)를 map의 grid cell로 변환 
         # (테스트) pose가 (-8,-4)라면 맵의 중앙에 위치하게 된다. 따라서 map_point_x,y 는 map size의 절반인 (175,175)가 된다.
         # pose가 (-16.75,12.75) 라면 맵의 시작점에 위치하게 된다. 따라서 map_point_x,y는 (0,0)이 된다.
         map_point_x= int((x - self.map_offset_x) / self.map_resolution)
         map_point_y= int((y - self.map_offset_y) / self.map_resolution)
-        
+        print("pose_to_grid_cell 왔음"+str(map_point_x)+str(map_point_y)) 
         
         return map_point_x,map_point_y
 
@@ -83,7 +88,7 @@ class a_star(Node):
 
         x = 0
         y = 0
-       
+
         # 로직 5. map의 grid cell을 위치(x,y)로 변환
         # (테스트) grid cell이 (175,175)라면 맵의 중앙에 위치하게 된다. 따라서 pose로 변환하게 되면 맵의 중앙인 (-8,-4)가 된다.
         # grid cell이 (350,350)라면 맵의 제일 끝 좌측 상단에 위치하게 된다. 따라서 pose로 변환하게 되면 맵의 좌측 상단인 (0.75,6.25)가 된다.
@@ -119,20 +124,24 @@ class a_star(Node):
             goal_cell = self.pose_to_grid_cell(goal_x, goal_y)  # 위치를 그리드 셀로 변환
             self.goal = goal_cell
                         
-            print(msg)   # 받은 goal_pose 메시지를 출력
+            print(msg)    # 받은 goal_pose 메시지를 출력
             
 
             if self.is_map ==True and self.is_odom==True  :  # 맵 데이터와 오도메트리 데이터가 모두 수신되었는지 확인
+                print("맵데이터를 받았고, 오드메트리가 모두 수신되었음.") 
+                
                 if self.is_grid_update==False :   # 그리드 맵 업데이트 여부를 확인
                     self.grid_update()    # 그리드 맵을 업데이트
 
         
                 self.final_path=[]   # 최종 경로를 저장할 빈 리스트 생성
 
-								# odom_msg를 읽어 로봇 위치를 가져와서 지정.
+				# odom_msg를 읽어 로봇 위치를 가져와서 시작위치로 지정. 
                 x=self.odom_msg.pose.pose.position.x
                 y=self.odom_msg.pose.pose.position.y
                 start_grid_cell=self.pose_to_grid_cell(x,y)
+                print("final_path생성은 잘 된거임?"+str(self.final_path))
+                print("odom에서 받은 pose x,y"+str(x), str(y))
 
                 self.path = [[0 for col in range(self.GRIDSIZE)] for row in range(self.GRIDSIZE)]   # 경로 계획을 위한 2차원 배열
                 self.cost = np.array([[self.GRIDSIZE*self.GRIDSIZE for col in range(self.GRIDSIZE)] for row in range(self.GRIDSIZE)]) # 비용 정보를 저장할 배열
@@ -141,9 +150,8 @@ class a_star(Node):
                 # 다익스트라 알고리즘을 완성하고 주석을 해제 시켜주세요. 
                 # 시작지, 목적지가 탐색가능한 영역이고(장애물이 없는 영역이고), 시작지와 목적지가 같지 않으면 경로탐색을 합니다.
                 if self.grid[start_grid_cell[0]][start_grid_cell[1]] ==0  and self.grid[self.goal[0]][self.goal[1]] ==0  and start_grid_cell != self.goal :
-                     self.dijkstra(start_grid_cell)  # 다익스트라 경로 계획 알고리즘을 호출
+                    self.dijkstra(start_grid_cell)  # 다익스트라 경로 계획 알고리즘을 호출
 
-			
 
                 self.global_path_msg=Path()   # 경로를 저장하기 위한 Path 메시지를 생성
                 self.global_path_msg.header.frame_id='map'    # frame_id는 map으로 지정. (경로가 map좌표계에서 정의됨)
@@ -157,6 +165,8 @@ class a_star(Node):
             
                 if len(self.final_path)!=0 :     # 최종 경로(self.final_path)가 비어 있지 않다면 경로 메시지를 발행
                     self.a_star_pub.publish(self.global_path_msg)
+
+                self.a_star_pub.publish(self.global_path_msg)
 
     def dijkstra(self,start):
         Q = deque()

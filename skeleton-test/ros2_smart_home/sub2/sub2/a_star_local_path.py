@@ -48,8 +48,7 @@ class astarLocalpath(Node):
 
 
     def path_callback(self,msg):
-        pass
-        
+    
         # 로직 2. global_path 데이터 수신 후 저장
 
         self.is_path=True  # 경로 메시지 수신 여부를 True로 설정
@@ -58,6 +57,8 @@ class astarLocalpath(Node):
     def timer_callback(self):
 
         if self.is_odom and self.is_path ==True:   # Odometry와 global_path 둘 다 있어야 실행 
+
+            print(self.global_path_msg)   # 테스트용 출력
             
             self.local_path_msg.header.frame_id='/map'
             
@@ -88,12 +89,9 @@ class astarLocalpath(Node):
                 
                 else :    # (로봇이 글로벌 경로의 끝에 도달한 경우)
                     self.local_path_msg.poses = self.global_path_msg.poses[self.current_waypoint:]
-                    
 
-        print(self.local_path_msg)  # 콘솔확인용 path정보 출력
         self.local_path_pub.publish(self.local_path_msg)   # 로컬 경로를 발행
         
-
         
 def main(args=None):
     rclpy.init(args=args)
