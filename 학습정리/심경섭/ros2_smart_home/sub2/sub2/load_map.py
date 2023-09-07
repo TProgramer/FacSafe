@@ -39,8 +39,8 @@ class loadMap(Node):
         self.map_size_x=350     # 맵이 그럼 17.5m 인건가 
         self.map_size_y=350
         self.map_resolution=0.05
-        self.map_offset_x=-8-8.75     # offset값 : 기준 좌표계(맵의 중심)와 오차
-        self.map_offset_y=-4-8.75
+        self.map_offset_x=-16.75     # offset값 : 기준 좌표계(맵의 중심)와 오차
+        self.map_offset_y=-12.75
         self.map_data = [0 for i in range(self.map_size_x*self.map_size_y)]  # 맵에 있는 그리드를 다 읽어서
         grid=np.array(self.map_data)    # 데이터 처리를 위해 NumPy배열로 변환
         grid=np.reshape(grid,(350, 350))  # 350x350 크기의 2차원배열로 재구성
@@ -63,7 +63,7 @@ class loadMap(Node):
         
         # 로직 2. 맵 데이터 읽고, 2차원 행렬로 변환
 
-        full_path="C:/Users/SSAFY/Desktop/skeleton/mobility-smarthome-skeleton/ros2_smart_home/sub2/map/map.txt"        # 맵 파일 경로 
+        full_path="C:/Users/SSAFY/Desktop/project_git/S09P22A101/skeleton-test/ros2_smart_home/sub2/map/map.txt"        # 맵 파일 경로 
 				
         with open(full_path, 'r') as self.f:    # 맵 파일 열기
             line_data = self.f.readlines()      # 파일에서 각 줄을 읽어서 line_data 리스트에 저장

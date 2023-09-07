@@ -10,6 +10,7 @@ from math import pi, cos, sin
 import tf2_ros
 import geometry_msgs.msg
 import time
+import math
 
 # odom 노드는 로봇의 속도(/turtlebot_status), Imu센서(/imu) 메시지를 받아서 로봇의 위치를 추정하는 노드입니다.
 # sub1_odom은 imu로 부터 받은 Quaternion을 사용하거나 각속도, 가속도 데이터를 이용해서 로봇의 포즈를 추정 할 것입니다.
@@ -69,31 +70,13 @@ class odom(Node):
         self.is_imu = False
         self.is_calc_theta = False
         # x,y,theta는 추정한 로봇의 위치를 저장할 변수 입니다.
-        self.x = -8-8.75
-        self.y = -4-8.75
+        self.x = -8.75
+        self.y = -8.75
 
-        self.theta = 0.0
+        self.theta = 0
         # imu_offset은 초기 로봇의 orientation을 저장할 변수 입니다.
         self.imu_offset = 0
         self.prev_time = 0
-
-        """
-        로직 2. publish, broadcast 할 메시지 설정
-
-        self.odom_msg.header.frame_id=
-        self.odom_msg.child_frame_id=
-
-        self.base_link_transform.header.frame_id = 
-        self.base_link_transform.child_frame_id = 
-
-        self.laser_transform.header.frame_id = 
-        self.laser_transform.child_frame_id =      
-        self.laser_transform.transform.translation.x = 
-        self.laser_transform.transform.translation.y = 
-        self.laser_transform.transform.translation.z = 
-        self.laser_transform.transform.rotation.w = 
-
-        """
         
         
         self.odom_msg.header.frame_id = "map"
@@ -117,24 +100,7 @@ class odom(Node):
         
 
     def imu_callback(self, msg):
-        """
-        pass
-        로직 3. IMU 에서 받은 quaternion을 euler angle로 변환해서 사용
-            이 떄 squaternion을 사용해 오일러 각도로 변환, 
-            odom은 시작할 떄가 기준이므로 초기에 imu_offset을 저장하고 이후 
-            self.theta를 계산
-            
-            
-        if self.is_imu ==False :
-            self.is_imu=True
-            imu_q=
-            self.imu_offset=
 
-        else :
-            imu_q=
-            self.theta=
-
-        """
         # 로직3. CHAT GPT채워줌
         
         if self.is_imu ==False :
@@ -143,7 +109,8 @@ class odom(Node):
             self.is_imu=True
             # IMU로부터 Quaternion의 값을 받아들임
             imu_q = Quaternion(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z)
-            self.imu_offset = (imu_q.to_euler())[2]
+            self.imu_offset = (imu_q.to_euler())[2] - 90*math.pi/180
+            
 
         else :
             # 현재 자세 (orientation) 데이터를 이용하여 self.theta 계산
@@ -185,17 +152,6 @@ class odom(Node):
                 # 원래의 코드
                 linear_x = msg.twist.linear.x
                 angular_z = -msg.twist.angular.z
-                """
-                로직 4. 로봇 위치 추정
-                (테스트) linear_x = 1, self.theta = 1.5707(rad), self.period = 1 일 때
-                self.x=0, self.y=1 이 나와야 합니다. 로봇의 헤딩이 90도 돌아가 있는
-                상태에서 선속도를 가진다는 것은 x축방향이 아니라 y축방향으로 이동한다는 뜻입니다. 
-
-                self.x+=
-                self.y+=
-                self.theta+=
-
-                """
                 
                 # 로봇 위치 추정
                 # 로봇의 x, y 위치 업데이트 (오일러 각도와 선속도를 사용하여)
@@ -225,29 +181,6 @@ class odom(Node):
                     rclpy.clock.Clock().now().to_msg()
                 )
                 self.laser_transform.header.stamp = rclpy.clock.Clock().now().to_msg()
-
-                """
-                로직 5. 추정한 로봇 위치를 메시지에 담아 publish, broadcast
-
-                q =
-                
-                self.base_link_transform.transform.translation.x = 
-                self.base_link_transform.transform.translation.y = 
-                self.base_link_transform.transform.rotation.x = 
-                self.base_link_transform.transform.rotation.y = 
-                self.base_link_transform.transform.rotation.z = 
-                self.base_link_transform.transform.rotation.w = 
-                
-                self.odom_msg.pose.pose.position.x=
-                self.odom_msg.pose.pose.position.y=
-                self.odom_msg.pose.pose.orientation.x=
-                self.odom_msg.pose.pose.orientation.y=
-                self.odom_msg.pose.pose.orientation.z=
-                self.odom_msg.pose.pose.orientation.w=
-                self.odom_msg.twist.twist.linear.x=
-                self.odom_msg.twist.twist.angular.z=
-
-                """
                 
                 # 로봇의 움직임이 2D일 때는 Roll(롤) 각도와 Pitch(피치) 각도를 0으로 설정  0,0,self.theta는 (롤각도, 피치각도, 요우각도)
                 # 이는 단순히 필요치 않기 때문
@@ -265,8 +198,8 @@ class odom(Node):
                 self.base_link_transform.transform.rotation.z = q.z
                 self.base_link_transform.transform.rotation.w = q.w
 
-                self.odom_msg.pose.pose.position.x = -16.75
-                self.odom_msg.pose.pose.position.y = -12.75
+                self.odom_msg.pose.pose.position.x = self.x
+                self.odom_msg.pose.pose.position.y = self.y
                 self.odom_msg.pose.pose.orientation.x = q.x
                 self.odom_msg.pose.pose.orientation.y = q.y
                 self.odom_msg.pose.pose.orientation.z = q.z
