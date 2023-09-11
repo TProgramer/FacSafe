@@ -65,7 +65,7 @@ class a_star(Node):
         
         # 로직 3. 맵 데이터 행렬로 바꾸기
         map_to_grid = np.array(self.map_msg.data)
-        self.grid = map_to_grid.reshape((self.map_size_x, self.map_size_y))  # 2차원 배열 형태로 저장
+        self.grid = map_to_grid.reshape((self.map_size_x, self.map_size_y), order="F")  # 2차원 배열 형태로 저장
         # 여기서 reshape 할 때 맵 데이터와 self.grid의 크기 및 형태가 일치해야 함
 
 
@@ -128,7 +128,6 @@ class a_star(Node):
             
 
             if self.is_map ==True and self.is_odom==True  :  # 맵 데이터와 오도메트리 데이터가 모두 수신되었는지 확인
-                print("맵데이터를 받았고, 오드메트리가 모두 수신되었음.") 
                 
                 if self.is_grid_update==False :   # 그리드 맵 업데이트 여부를 확인
                     self.grid_update()    # 그리드 맵을 업데이트
@@ -140,8 +139,6 @@ class a_star(Node):
                 x=self.odom_msg.pose.pose.position.x
                 y=self.odom_msg.pose.pose.position.y
                 start_grid_cell=self.pose_to_grid_cell(x,y)
-                print("final_path생성은 잘 된거임?"+str(self.final_path))
-                print("odom에서 받은 pose x,y"+str(x), str(y))
 
                 self.path = [[0 for col in range(self.GRIDSIZE)] for row in range(self.GRIDSIZE)]   # 경로 계획을 위한 2차원 배열
                 self.cost = np.array([[self.GRIDSIZE*self.GRIDSIZE for col in range(self.GRIDSIZE)] for row in range(self.GRIDSIZE)]) # 비용 정보를 저장할 배열
