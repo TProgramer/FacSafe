@@ -81,8 +81,25 @@ class astarLocalpath(Node):
             # 가장 가까운 웨이포인트의 인덱스를 current_waypoint에 저장
             
             # 로직 5. local_path 예외 처리
-						# 로봇의 현재 위치와 가장 가까운 글로벌 웨이포인트 기반으로 로컬 경로를 생성
+		# 로봇의 현재 위치와 가장 가까운 글로벌 웨이포인트 기반으로 로컬 경로를 생성
         if self.current_waypoint != -1 :    # current_waypoint가 -1이 아닌 경우(유효한 가장 가까운 웨이포인트를 찾은 경우)
+            
+            
+            #  순환경로인경우
+            if(self.global_path_msg.poses[0].pose.position.x==self.global_path_msg.poses[-1].pose.position.x and self.global_path_msg.poses[0].pose.position.y==self.global_path_msg.poses[-1].pose.position.y) :
+            
+            
+                if self.current_waypoint + self.local_path_size < len(self.global_path_msg.poses):
+                        # 로봇의 현재 위치와 가장 가까운 글로벌 웨이포인트 기반으로 로컬 경로를 생성
+                        self.local_path_msg.poses = self.global_path_msg.poses[self.current_waypoint:self.current_waypoint + self.local_path_size]
+                else:
+                    # 로봇이 글로벌 경로의 끝에 도달한 경우
+                    remaining_poses = self.local_path_size - (len(self.global_path_msg.poses) - self.current_waypoint)
+                    self.local_path_msg.poses = self.global_path_msg.poses[self.current_waypoint:] + self.global_path_msg.poses[:remaining_poses]
+            
+            # 비순환경로인경우
+            else :
+                
                 if self.current_waypoint + self.local_path_size < len(self.global_path_msg.poses):
                     self.local_path_msg.poses = self.global_path_msg.poses[self.current_waypoint:self.current_waypoint + self.local_path_size]
                     

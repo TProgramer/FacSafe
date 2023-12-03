@@ -30,10 +30,10 @@ class a_star(Node):
         # 로직 1. publisher, subscriber 만들기
         self.map_sub = self.create_subscription(OccupancyGrid,'map',self.map_callback,1)    # 맵 정보 메시지 수신
         self.odom_sub = self.create_subscription(Odometry,'odom',self.odom_callback,1)      # 위치 데이터 수신
-        self.goal_sub = self.create_subscription(PoseStamped,'goal_pose',self.goal_callback,1)   # 목표 위치 수신
+        self.goal_sub = self.create_subscription(PoseStamped,'goal_poses',self.goal_callback,1)   # 목표 위치 수신
         self.a_star_pub= self.create_publisher(Path, 'global_path', 1)    # 경로 메시지 발행하기
         
-        # self.global_path_msg=Path()   # 경로를 저장하기 위한 Path 메시지를 생성
+        self.global_path_msg=Path()   # 경로를 저장하기 위한 Path 메시지를 생성
         # self.final_path=[]   # 최종 경로를 저장할 빈 리스트 생성
 
         self.goals = []  # 여러 목적지를 저장하는 리스트
@@ -118,18 +118,15 @@ class a_star(Node):
         
 
     def goal_callback(self,msg):
-        
-        if msg.header.frame_id=='map':     # 메시지가 'map' 프레임에 대한 정보를 포함하고 있다면 실행
-            
-            for pose_stamped in msg.poses:
-                goal_x = pose_stamped.pose.position.x
-                goal_y = pose_stamped.pose.position.y
-                # x와 y 좌표를 사용하여 원하는 작업을 수행
-                print(f"목적지 x: {goal_x}, y: {goal_y}")
-                goal_cell = self.pose_to_grid_cell(goal_x, goal_y)  # 위치를 그리드 셀로 변환
-                self.goals.append(goal_cell)
+                    
+            # 로직 6. goal_pose 메시지 수신하여 목표 위치 설정
+            goal_x = msg.pose.position.x
+            goal_y = msg.pose.position.y
+            goal_cell = self.pose_to_grid_cell(goal_x, goal_y)  # 위치를 그리드 셀로 변환
+            self.goals.append(goal_cell)
+            self.final_path_array = []
                         
-                
+            print(msg)    # 받은 goal_pose 메시지를 출력
             
 
             if self.is_map and self.is_odom :  # 맵 데이터와 오도메트리 데이터가 모두 수신되었는지 확인
@@ -171,7 +168,8 @@ class a_star(Node):
                             # 배열 형태로 만들어진 경로 메시지 발행
                             if len(self.final_path) != 0:
                                 # 경로 메시지 발행
-                                self.a_star_pub.publish(self.global_path_msg)
+                                # self.a_star_pub.publish(self.global_path_msg)
+                                final_path_array.append(self.final_path)
                                 # 배열 형태로 만들어진 경로도 출력
                                 print(f"Path for Goal {i + 1} (Array):", path_as_array)
 
@@ -180,6 +178,8 @@ class a_star(Node):
                 self.current_goal_index += 1
                 self.is_found_path = False
                 self.final_path = []  # 이전 목적지 경로 초기화
+
+            self.a_star_pub.publish(self.global_path_msg)
 
 
     def dijkstra(self,start):

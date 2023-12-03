@@ -178,7 +178,7 @@ class Mapping:
 
     def __del__(self):
         self.save_map(())
-        ㄴ
+        
     def save_map(self):
         map_clone = self.map.copy()
         cv2.imwrite(self.map_filename, map_clone*255)

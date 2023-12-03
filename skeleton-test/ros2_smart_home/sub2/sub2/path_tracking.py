@@ -26,8 +26,8 @@ import numpy as np
 class followTheCarrot(Node):
 
     def __init__(self):
-        super().__init__('path_tracking')
-        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        super().__init__('path_tracking') 
+        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)      # 주어진 경로를 따라가게 하는 제어 입력값(/cmd_vel)
         self.subscription = self.create_subscription(Odometry,'/odom',self.odom_callback,10)
         self.status_sub = self.create_subscription(TurtlebotStatus,'/turtlebot_status',self.status_callback,10)
         self.path_sub = self.create_subscription(Path,'/local_path',self.path_callback,10)
@@ -46,6 +46,7 @@ class followTheCarrot(Node):
         self.cmd_msg=Twist()
 
         # 로직 2. 파라미터 설정
+        # lfd : 전방주시거리
         self.lfd=0.1
         self.min_lfd=0.1
         self.max_lfd=1.0
@@ -56,8 +57,8 @@ class followTheCarrot(Node):
         if self.is_status and self.is_odom ==True and self.is_path==True:
 
 
-            if len(self.path_msg.poses)> 1:
-                self.is_look_forward_point= False
+            if len(self.path_msg.poses)> 1:    # 로컬패스에서 오는 값
+                self.is_look_forward_point = False 
                 
                 # 로봇의 현재 위치를 나타내는 변수
                 robot_pose_x=self.odom_msg.pose.pose.position.x
@@ -65,18 +66,10 @@ class followTheCarrot(Node):
 
                 # 로봇이 경로에서 떨어진 거리를 나타내는 변수
                 lateral_error= sqrt(pow(self.path_msg.poses[0].pose.position.x-robot_pose_x,2)+pow(self.path_msg.poses[0].pose.position.y-robot_pose_y,2))
-                print(robot_pose_x,robot_pose_y,lateral_error)
-                '''
-                로직 4. 로봇이 주어진 경로점과 떨어진 거리(lateral_error)와 로봇의 선속도를 이용해 전방주시거리 설정
+                print("lateral_error : " + str(lateral_error))
                 
-                self.lfd= 
-                
-                if self.lfd < self.min_lfd :
-                    self.lfd=self.min_lfd
-                if self.lfd > self.max_lfd:
-                    self.lfd=self.max_lfd
+                # 로직 4. 로봇이 주어진 경로점과 떨어진 거리(lateral_error)와 로봇의 선속도를 이용해 전방주시거리 설정
 
-                '''
 
                 self.lfd = (self.status_msg.twist.linear.x + lateral_error) * 0.5
 
@@ -86,29 +79,23 @@ class followTheCarrot(Node):
                     self.lfd = self.max_lfd
 
                 min_dis=float('inf')
-                '''
-                로직 5. 전방 주시 포인트 설정
-                for num,waypoint in enumerate(self.path_msg.poses) :
+                
 
-                    self.current_point=
-                    dis=
-                    if abs(dis-self.lfd) < min_dis :
-                        min_dis=
-                        self.forward_point=
-                        self.is_look_forward_point=
-
-                '''  
+                # 로직 5. 전방 주시 포인트 설정
                 
                 for num, waypoint in enumerate(self.path_msg.poses):
                     self.current_point = waypoint
                     dis = sqrt(pow(self.current_point.pose.position.x - robot_pose_x, 2) +
                                pow(self.current_point.pose.position.y - robot_pose_y, 2))
 
+                    print("dis : " + str(dis))
+                    
                     if abs(dis - self.lfd) < min_dis:
                         min_dis = abs(dis - self.lfd)
                         self.forward_point = self.current_point.pose.position
+                        print("min_dis : " + str(min_dis))
                         self.is_look_forward_point = True
-                            
+                        
                 
                 if self.is_look_forward_point :
             
@@ -134,9 +121,9 @@ class followTheCarrot(Node):
                     
                     trans_matrix = np.array(
                         [
-                            [cos(self.robot_yaw), sin(self.robot_yaw), robot_pose_x],
+                            [cos(self.robot_yaw), -sin(self.robot_yaw), robot_pose_x],
                             [sin(self.robot_yaw), cos(self.robot_yaw), robot_pose_y],
-                            [0, 0, 1],
+                            [0, 0, 1]
                         ]
                     )
                     det_trans_matrix = np.linalg.inv(trans_matrix)
@@ -147,7 +134,7 @@ class followTheCarrot(Node):
                     local_forward_point = np.dot(det_trans_matrix, global_forward_point)
                     '''
                     local_forward_point = det_trans_matrix.dot(global_forward_point)
-                    theta = atan2(local_forward_point[1], local_forward_point[0])
+                    theta = -atan2(local_forward_point[1], local_forward_point[0])
                     
                     '''
                     로직 7. 선속도, 각속도 정하기

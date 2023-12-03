@@ -141,3 +141,6 @@ cython_debug/
 build/
 install/
 log/
+
+# model files
+*.pt
